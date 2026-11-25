@@ -99,6 +99,11 @@ namespace TaskFlow.API.Services
             if(password == PasswordVerificationResult.Failed)
             {
                 throw new Exception("Password is not correct!");
+            } else if (password == PasswordVerificationResult.SuccessRehashNeeded)
+            {
+                user.PasswordHash = _hasher.HashPassword(user, dto.Password);
+
+                await _context.SaveChangesAsync();
             }
 
             return new AuthResponseDto
