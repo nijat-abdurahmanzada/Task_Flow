@@ -4,7 +4,7 @@ namespace TaskFlow.API.Services.Interfaces
 {
     public interface IAuthService
     {
-        public Task<AuthResponseDto> RegisterAsync(RegisterDto dto);
-        public Task<AuthResponseDto >LoginAsync(LoginDto dto);
+        Task<AuthResponseDto> RegisterAsync(RegisterDto dto);
+        Task<AuthResponseDto >LoginAsync(LoginDto dto);
     }
 }

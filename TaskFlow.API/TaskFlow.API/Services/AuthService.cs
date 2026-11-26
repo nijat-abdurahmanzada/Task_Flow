@@ -14,14 +14,15 @@ namespace TaskFlow.API.Services
     public class AuthService : IAuthService
     {
         private readonly AppDbContext _context;
-        private readonly PasswordHasher<User> _hasher = new ();
+        private readonly PasswordHasher<User> _hasher = new();
 
         private readonly string _issuer;
         private readonly string _audience;
         private readonly string _secretKey;
         private readonly int _expirationInMinutes;
-        
-        public AuthService(AppDbContext context, IConfiguration configuration) {
+
+        public AuthService(AppDbContext context, IConfiguration configuration)
+        {
             _context = context;
             _issuer = configuration["Jwt:Issuer"]!;
             _audience = configuration["Jwt:Audience"]!;
@@ -48,7 +49,7 @@ namespace TaskFlow.API.Services
                 claims: claims,
                 expires: DateTime.UtcNow.AddMinutes(_expirationInMinutes)
             );
-            
+
             var tokenHandler = new JwtSecurityTokenHandler();
 
             return tokenHandler.WriteToken(token);
@@ -57,7 +58,7 @@ namespace TaskFlow.API.Services
 
         public async Task<AuthResponseDto> RegisterAsync(RegisterDto dto)
         {
-            bool exist = await _context.Users.AnyAsync(u=> u.Email == dto.Email);
+            bool exist = await _context.Users.AnyAsync(u => u.Email == dto.Email);
 
             if (exist)
             {
@@ -71,7 +72,7 @@ namespace TaskFlow.API.Services
             };
 
             var hashedPassword = _hasher.HashPassword(user, dto.Password);
-            user.PasswordHash= hashedPassword;
+            user.PasswordHash = hashedPassword;
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
@@ -87,7 +88,7 @@ namespace TaskFlow.API.Services
 
         public async Task<AuthResponseDto> LoginAsync(LoginDto dto)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u=> u.Email == dto.Email);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
 
             if (user == null)
             {
@@ -96,10 +97,11 @@ namespace TaskFlow.API.Services
 
             var password = _hasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
 
-            if(password == PasswordVerificationResult.Failed)
+            if (password == PasswordVerificationResult.Failed)
             {
                 throw new Exception("Password is not correct!");
-            } else if (password == PasswordVerificationResult.SuccessRehashNeeded)
+            }
+            else if (password == PasswordVerificationResult.SuccessRehashNeeded)
             {
                 user.PasswordHash = _hasher.HashPassword(user, dto.Password);
 
