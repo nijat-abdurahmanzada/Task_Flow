@@ -51,16 +51,47 @@ namespace TaskFlow.API.Services
             return projects.Adapt<List<ProjectResponseDto>>();
         }
 
-        public async Task<ProjectResponseDto?> GetProjectAsync(int projectId,  int userId)
+        public async Task<ProjectResponseDto?> GetProjectAsync(int projectId, int userId)
         {
             var project = await _context.Projects
                 .Where(p => p.OwnerId == userId)
-                .Include(p=>p.Owner)
-                .FirstOrDefaultAsync(p=> p.Id == projectId);
+                .Include(p => p.Owner)
+                .FirstOrDefaultAsync(p => p.Id == projectId);
 
-            if(project == null) return null;
-            
+            if (project == null) return null;
+
             return project.Adapt<ProjectResponseDto>();
+        }
+
+        public async Task<ProjectResponseDto?> UpdateProjectAsync(UpdateProjectDto dto, int projectId, int userId)
+        {
+            var project = await _context.Projects
+                .Where(p => p.OwnerId == userId)
+                .Include(p => p.Owner)
+                .FirstOrDefaultAsync(p => p.Id == projectId);
+
+            if (project == null) return null;
+
+            project.Name = dto.Name;
+            project.Description = dto.Description;
+
+            await _context.SaveChangesAsync();
+
+            return project.Adapt<ProjectResponseDto>();
+        }
+
+        public async Task<bool> DeleteProjectAsync(int projectId, int userId)
+        {
+            var project = await _context.Projects
+                .Where(p => p.OwnerId == userId)
+                .FirstOrDefaultAsync(p => p.Id == projectId);
+
+            if (project == null) return false;
+
+            _context.Projects.Remove(project);
+            await _context.SaveChangesAsync();
+
+            return true;
         }
     }
 }
